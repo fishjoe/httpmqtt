@@ -13,7 +13,7 @@ class Message:
         self.from_server=""
         
     def log(self):
-        subDic={'topic':self.topic,'message':self.msg}
+        subDic={'topic':self.topic,'message':self.msg, 'from':self.from_server}
         timestr, *_ = dtstr()
         dicNew={timestr:subDic}
         dic={}
@@ -29,6 +29,7 @@ class Message:
             dic.popitem()
         with open("log.json", "w") as file:
             json.dump(dic, file)
+        return str(dic)
         
 
 def dtstr():  
@@ -49,12 +50,14 @@ def make_page(server, homepage):
     s.listen(1)
     x = 0
     response=""
+    led.off()
     while True:
         x+=1
         print('listening on', host)
         count = 0
         cl, addr = s.accept()
         print('client connected from', addr)
+        msg.from_server = addr[0]
         request = cl.recv(1024)
         request = request.decode("utf8")
         # request = str(request)
@@ -66,18 +69,18 @@ def make_page(server, homepage):
                     msg.topic = v.strip()
                 elif k.strip() == "message":
                     msg.msg = v.strip()
-    #  .....................................             
+    #  .....................................
+        mqtt.subscribe(msg.topic)
         mqtt.publish(msg.topic, msg.msg)
         time.sleep(1)
         mqtt.wait_msg()
     #   ...........................
         if msg.isDone:
-            response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
+            # response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
             msg.isDone=False
-            msg.log()
+            response = msg.log()
             msg.msg=""
             msg.topic=""
-            
         # print(response)
         cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
         cl.send(response)
@@ -107,7 +110,7 @@ def led_blink(qty, on, off):
     
 
 def mqtt_callback(topic, payload):
-    led_blink(2,.5,.5)
+    led_blink(3,.2,.2)
     topic = topic.decode('utf-8')
     payload = payload.decode('utf-8')
     msg.isDone = True
@@ -119,7 +122,7 @@ def mqtt_connect(**kwargs):
         client.set_callback(mqtt_callback)
         client.connect()
         print('Connected to ......... %s MQTT Broker' % kwargs["server"])
-        client.subscribe("test")
+#         client.subscribe("test")
         print('MQTT is ready. Subscribed to "test"', "\n")
         return client
 
@@ -127,10 +130,11 @@ if __name__ == "__main__":
     mqtt_server = 'dc87a3d9523a42798c3d086fd8acbdb5.s1.eu.hivemq.cloud'
     mqtt_port = 8883
     client_id = 'PicoW'
-    mqtt_username = 'fishjoe'
-    mqtt_psd = 'fish8264'
+    mqtt_username = 'fishjoe2'
+    mqtt_psd = 'fishjoe2'
     topic_pub = 'test'
     topic_msg = 'PicoStart'
+    led.on()
     msg=Message()
     mqtt = mqtt_connect(client_id=client_id, server=mqtt_server, port=mqtt_port, user=mqtt_username,
                          password=mqtt_psd, ssl=True, ssl_params={"server_hostname": mqtt_server})   

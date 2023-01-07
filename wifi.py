@@ -46,6 +46,9 @@ def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', 
         while True:
             if isStatic:
                 wifi.ifconfig(iptp)
+# #                 led_blink(4, .2, .2)
+#             else:
+# #                 led_blink(1, 1.6, 0)
             wifi.active(True)
             wifi.connect(ssid, psd)
             count_on_attempts += 1
@@ -220,17 +223,6 @@ def ping(host, count=4, timeout=5000, interval=10, quiet=False, size=64):
 def wifi():
     ssid = "SPARK-FDMF9F"
     psd = "LUU2W5DSME"
-    wifi=network.WLAN()
-    if all(
-                    [
-                        wifi.isconnected(),
-                        wifi.status() == 3,
-                        wifi.ifconfig()[0] != '0.0.0.0'
-                    ]
-            ):
-        sys.exit()
-    
-    
     wlan = wifi_connection(ssid, psd)
     mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
     print(mac)
