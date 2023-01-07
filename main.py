@@ -64,7 +64,7 @@ def make_page(server, homepage):
             msg.from_server = addr[0]
             request = cl.recv(1024)
             request = request.decode("utf8")
-            # request = str(request)
+            print("line 66 request = cl.recv(1024)",request)
             lines = request.split("\n")
             for line in lines:
                 if ":" in line:
@@ -73,12 +73,15 @@ def make_page(server, homepage):
                         msg.topic = v.strip()
                     elif k.strip() == "message":
                         msg.msg = v.strip()
+            print(msg.topic)
+            print(msg.msg)
         #  .....................................
-            
-            mqtt.subscribe(msg.topic)
+            print(f"(line79)subcribed to {msg.topic}")
             mqtt.publish(msg.topic, msg.msg)
-            time.sleep(1)
+            print(f"(line80)published message: {msg.msg}")
+#             time.sleep(1)
             mqtt.wait_msg()
+            print(f"(line83)Succesfully waited msg")
         #   ...........................
             if msg.isDone:
                 # response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
@@ -93,8 +96,9 @@ def make_page(server, homepage):
             cl.close()
         else:
             print("\r", x, sep="", end="")
+            time.sleep(1)
             if x == 60:
-                mqtt.subscribe("test")
+                mqtt.publish("refresh", "refresh")
                 print("\nmqtt refreshed")
                 led_blink(5,.1,.1)
                 x=0
@@ -123,8 +127,8 @@ def led_blink(qty, on, off):
 
 def mqtt_callback(topic, payload):
     led_blink(3,.2,.2)
-    topic = topic.decode('utf-8')
-    payload = payload.decode('utf-8')
+#     topic = topic.decode('utf-8')
+#     payload = payload.decode('utf-8')
     msg.isDone = True
     print("\n'mqqt' received....")
 
@@ -134,7 +138,7 @@ def mqtt_connect(**kwargs):
         client.set_callback(mqtt_callback)
         client.connect()
         print('Connected to ......... %s MQTT Broker' % kwargs["server"])
-#         client.subscribe("test")
+        client.subscribe("test")
         print('MQTT is ready. Subscribed to "test"', "\n")
         return client
 

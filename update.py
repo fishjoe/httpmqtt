@@ -7,6 +7,7 @@ folder on your pc as an http server. (ender the project folder in terminal and t
 
 
 
+
 import network
 import os
 import sys
@@ -73,13 +74,20 @@ def stats(file: str) -> StatsResult:
             raise
         
 
-
-# TODO LED called before updating.
+def stats_parse_back(stat_obj):  # I try not touch code from third party. result: rtc
+    mtime = str(stat_obj.dt_mtime)
+    import re
+    delim = re.compile("[- :]")
+#     dttp = (int(yyyy),int(mm),int(dd),int(hh),int(mm),int(ss),0,0)
+    dttp = [int(i) for i in delim.split(mtime)]+[0,0]
+    struc_time = time.mktime(dttp)
+    # print("line 84", struc_time)
+    return struc_time
 
 
 def date_and_time_string(t = time.localtime(), title_date="", title_time="", sep_date_n_time="", sep_date="", sep_time=""):
     tm = ""
-    print(str(t))
+    # print(str(t))
     for i in t[:6]:
         if len(str(i)) == 1:
             se = "0" + str(i)
@@ -88,26 +96,36 @@ def date_and_time_string(t = time.localtime(), title_date="", title_time="", sep
         tm += se
     date_and_time_string = title_date + sep_date + tm[:4] + sep_date + tm[4:6] + tm[6:8] + sep_date_n_time + \
                            title_time + tm[8:10] + sep_time + tm[10:12] + sep_time + tm[12:14]
+    # print(date_and_time_string)
     return date_and_time_string
 
 
-def get_mod_info_on(server,file): # and test for server status.
-    URL = server + file
+def getURL(server, file):
+    server = server if server[-1] == "/" else server+"/"
+    return server + file
+    
+
+
+def get_mod_info_on(server, file): # and test for server status.
+    URL = getURL(server, file)
+    # print(URL)
     try:
+        # print("line 119: timing")
         r = requests.head(URL)
         url_time = r.headers['Last-Modified']
-    except OSError as e:
+        # print("line 122", url_time)
+    except:
         url_time = "Thu, 01 Jan 1970 00:00:00 GMT"
     return url_time
 
 
 def update(server, file):
-    URL = server + file
-    print(URL)
+    URL = getURL(server, file)
+    # print(URL)
     resp = requests.get(URL)
     with open(file, "w") as file:
         file.write(resp.content)
-        print("Suceed")
+        # print("Suceed")
 
 
 def parse_requested_time(url_time):
@@ -123,8 +141,8 @@ def parse_requested_time(url_time):
     timeobj = time.mktime((int(yyyy), m, int(dd), int(hhmmss[:2]),  int(hhmmss[2:4]), int(hhmmss[4:]), 0, 0))
     timeobj = timeobj + (3600 * 13)
     thistime = time.localtime(timeobj)
-    # print(thistime)
-    print("\r.", end="", sep="")
+    # # print(thistime)
+    # print("\r.", end="", sep="")
     return timeobj, thistime
 
 def is_not_folder(fileInfo):
@@ -134,33 +152,32 @@ def is_not_folder(fileInfo):
 if __name__ == "__main__":
     
     # TODO Does not responde if http server fails.
-    server = "http://192.168.1.212:8000"
+    server = "http://192.168.1.212:8000"    
+    
     try:
         requests.head(server)
+        # print("line 159: 1 . server working")
     except OSError:
-        print("server not readay")
+        # print("line 161: 1n . server not readay")
         sys.exit()
     
     for ft in os.ilistdir():
+        # print(f"line 165, 2 . {ft[0]} being examed")
         if is_not_folder(ft):
             f = ft[0]
-            try:
-                url_time = get_mod_info_on(server, f)
-            except:
-                url_time = "Thu, 01 Jan 1970 00:00:00 GMT"
+            url_time = get_mod_info_on(server, f)
+            # print(f"line 169: 3, {url_time} received")
             objtime, _ = parse_requested_time(url_time)
-            stat = stats(f)
-            sta = [stat.file, str(stat.dt_ctime), str(stat.dt_mtime), str(stat.dt_atime)]
-            # print("Localfile: " + str(sta) + "\n")
-            [my,mm,md] = sta[2].split(" ")[0].split("-")
-            [mh,mmin,ms] = sta[2].split(" ")[1].split(":")
-            dttp = (int(my),int(mm),int(md),int(mh),int(mmin),int(ms),0,0)
-            localmtime = time.mktime(dttp)
-            # print(f, " : ", objtime, localmtime)
+            # print("line 171:",objtime)
+            sta = stats(f)
+            localmtime=stats_parse_back(sta)
+            # print("line 171:",localmtime)
+            
+            # # print(f, " : ", objtime, localmtime)
             if objtime > localmtime:
-                print("Updated", f)
+                print(f"line 178: {f} updated")
                 update(server, f)
             else:
-                # print(f, "not update")
+                print(f"line 181: {f} not updated")
                 pass
   
