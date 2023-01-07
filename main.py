@@ -3,6 +3,7 @@ import socket
 import time
 import json
 from umqtt.simple import MQTTClient
+import uselect as select
 
 class Message:
     def __init__(self):
@@ -50,42 +51,53 @@ def make_page(server, homepage):
     s.listen(1)
     x = 0
     response=""
-    led.off()
+    print('listening on', host)
     while True:
+        r, _, _ = select.select([s], [], [], 1.0)
         x+=1
-        print('listening on', host)
-        count = 0
-        cl, addr = s.accept()
-        print('client connected from', addr)
-        msg.from_server = addr[0]
-        request = cl.recv(1024)
-        request = request.decode("utf8")
-        # request = str(request)
-        lines = request.split("\n")
-        for line in lines:
-            if ":" in line:
-                k, v = line.lower().split(":", 1)
-                if k.strip() == "topic":
-                    msg.topic = v.strip()
-                elif k.strip() == "message":
-                    msg.msg = v.strip()
-    #  .....................................
-        mqtt.subscribe(msg.topic)
-        mqtt.publish(msg.topic, msg.msg)
-        time.sleep(1)
-        mqtt.wait_msg()
-    #   ...........................
-        if msg.isDone:
-            # response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
-            msg.isDone=False
-            response = msg.log()
-            msg.msg=""
-            msg.topic=""
-        # print(response)
-        cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
-        cl.send(response)
-        response=""
-        cl.close()
+        if x%3 == 0:
+            led_blink(1,.1,.5)
+        if r:
+            count = 0
+            cl, addr = s.accept()
+            print('\nclient connected from', addr)
+            msg.from_server = addr[0]
+            request = cl.recv(1024)
+            request = request.decode("utf8")
+            # request = str(request)
+            lines = request.split("\n")
+            for line in lines:
+                if ":" in line:
+                    k, v = line.lower().split(":", 1)
+                    if k.strip() == "topic":
+                        msg.topic = v.strip()
+                    elif k.strip() == "message":
+                        msg.msg = v.strip()
+        #  .....................................
+            
+            mqtt.subscribe(msg.topic)
+            mqtt.publish(msg.topic, msg.msg)
+            time.sleep(1)
+            mqtt.wait_msg()
+        #   ...........................
+            if msg.isDone:
+                # response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
+                msg.isDone=False
+                response = msg.log()
+                msg.msg=""
+                msg.topic=""
+            # print(response)
+            cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
+            cl.send(response)
+            response=""
+            cl.close()
+        else:
+            print("\r", x, sep="", end="")
+            if x == 60:
+                mqtt.subscribe("test")
+                print("\nmqtt refreshed")
+                led_blink(5,.1,.1)
+                x=0
 
 xml ="""<xml>
 <test><p>this is test</p>
@@ -134,10 +146,9 @@ if __name__ == "__main__":
     mqtt_psd = 'fishjoe2'
     topic_pub = 'test'
     topic_msg = 'PicoStart'
-    led.on()
     msg=Message()
     mqtt = mqtt_connect(client_id=client_id, server=mqtt_server, port=mqtt_port, user=mqtt_username,
-                         password=mqtt_psd, ssl=True, ssl_params={"server_hostname": mqtt_server})   
+                         password=mqtt_psd, ssl=True, ssl_params={"server_hostname": mqtt_server}) 
     print("Connecting to http ......")
     wlan=network.WLAN()
     if not wlan.isconnected():
