@@ -70,15 +70,6 @@ def make_page(server, homepage):
             isValid = all(["topic" in request, "message" in request])
             msg.topic = requestTopic.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
             msg.msg = requestMsg.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
-            
-#             lines = request.split("\n")
-#             for line in lines:
-#                 if ":" in line:
-#                     k, v = line.lower().split(":", 1)
-#                     if k.strip() == "topic":
-#                         msg.topic = v.strip()
-#                     elif k.strip() == "message":
-#                         msg.msg = v.strip()
             print(msg.topic)
             print(msg.msg)
         #  .....................................
