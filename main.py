@@ -65,21 +65,28 @@ def make_page(server, homepage):
             request = cl.recv(1024)
             request = request.decode("utf8")
             print("line 66 request = cl.recv(1024)",request)
-            lines = request.split("\n")
-            for line in lines:
-                if ":" in line:
-                    k, v = line.lower().split(":", 1)
-                    if k.strip() == "topic":
-                        msg.topic = v.strip()
-                    elif k.strip() == "message":
-                        msg.msg = v.strip()
+            requestTopic = request.lower()
+            requestMsg = request.lower()
+            isValid = all(["topic" in request, "message" in request])
+            msg.topic = requestTopic.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
+            msg.msg = requestMsg.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
+            
+#             lines = request.split("\n")
+#             for line in lines:
+#                 if ":" in line:
+#                     k, v = line.lower().split(":", 1)
+#                     if k.strip() == "topic":
+#                         msg.topic = v.strip()
+#                     elif k.strip() == "message":
+#                         msg.msg = v.strip()
             print(msg.topic)
             print(msg.msg)
         #  .....................................
+            mqtt.subscribe(msg.topic)
             print(f"(line79)subcribed to {msg.topic}")
             mqtt.publish(msg.topic, msg.msg)
-            print(f"(line80)published message: {msg.msg}")
-#             time.sleep(1)
+            print(f"(line86)published message: {msg.msg}")
+            time.sleep(3)
             mqtt.wait_msg()
             print(f"(line83)Succesfully waited msg")
         #   ...........................
@@ -146,8 +153,8 @@ if __name__ == "__main__":
     mqtt_server = 'dc87a3d9523a42798c3d086fd8acbdb5.s1.eu.hivemq.cloud'
     mqtt_port = 8883
     client_id = 'PicoW'
-    mqtt_username = 'fishjoe2'
-    mqtt_psd = 'fishjoe2'
+    mqtt_username = 'fishjoe'
+    mqtt_psd = 'fish8264'
     topic_pub = 'test'
     topic_msg = 'PicoStart'
     msg=Message()
