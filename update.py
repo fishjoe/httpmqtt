@@ -7,8 +7,6 @@ folder on your pc as an http server. (ender the project folder in terminal and t
 
 
 
-
-
 import network
 import os
 import sys

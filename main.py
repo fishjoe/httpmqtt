@@ -40,7 +40,6 @@ def dtstr():
     return dttm, dtstr, tmstr
 
 
-
 def make_page(server, homepage):
     html = homepage
     host = socket.getaddrinfo(server, 80)[0][-1]

@@ -94,9 +94,6 @@ def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', 
         return wifi
 
 
-
-
-
 # ----------------------------------------- including Olav Morken's "uping" ---------------------------
 # ----------------------------------------- for learning purpose only ---------------------------
 
