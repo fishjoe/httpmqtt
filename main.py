@@ -9,12 +9,11 @@ class Message:
         self.isDone=False
         self.msg=""
         self.topic=""
+        self.print_screen=""
+        self.from_server=""
         
     def log(self):
         subDic={'topic':self.topic,'message':self.msg}
-        #
-        # recordStr = f"'topic':'{self.topic}','message':'{self.msg}'"
-        # recordStr = "{" + recordStr + "}"
         timestr, *_ = dtstr()
         dicNew={timestr:subDic}
         dic={}
@@ -91,8 +90,25 @@ xml ="""<xml>
 </test>
 </xml>"""
 
+led = machine.Pin('LED', machine.Pin.OUT)
+
+def led_blink(qty, on, off):
+    if led.value() == 0:
+        for i in range(qty):
+            led.on()
+            time.sleep(on)
+            led.off()
+            time.sleep(off)
+    else:
+        for i in range(qty):
+            led.off()
+            time.sleep(off)
+            led.on()
+            time.sleep(on)
+    
 
 def mqtt_callback(topic, payload):
+    led_blink(2,.5,.5)
     topic = topic.decode('utf-8')
     payload = payload.decode('utf-8')
     msg.isDone = True

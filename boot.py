@@ -35,19 +35,18 @@ def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', 
         iptp=wifi.ifconfig()
         if wifi.isconnected():
             print(f"Access Point is ready at {iptp}, SSID : {ssid}, Password : {psd}")
-            led.on()
             time.sleep(.5)
             return wifi
         # access point is ready
     else:
         wifi = network.WLAN(network.STA_IF)
-        led_blink(2, .2, .2)
+#         led_blink(2, .2, .2)
         while True:
-            if isStatic:
-                wifi.ifconfig(iptp)
-                led_blink(4, .2, .2)
-            else:
-                led_blink(1, 1.6, 0)
+#             if isStatic:
+#                 wifi.ifconfig(iptp)
+# #                 led_blink(4, .2, .2)
+#             else:
+# #                 led_blink(1, 1.6, 0)
             wifi.active(True)
             wifi.connect(ssid, psd)
             count_on_attempts += 1
