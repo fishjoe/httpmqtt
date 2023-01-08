@@ -2,19 +2,27 @@ import network
 import socket
 import time
 import json
-from umqtt.simple import MQTTClient
+from simple_mqtt_modified import MQTTClient
 import uselect as select
 
-class Message:
+class Data:
     def __init__(self):
         self.isDone=False
-        self.msg=""
+        self.mess=""
         self.topic=""
         self.print_screen=""
         self.from_server=""
+        self.mqtt_server = 'dc87a3d9523a42798c3d086fd8acbdb5.s1.eu.hivemq.cloud'
+        self.mqtt_port = 8883
+        self.client_id = 'PicoW'
+        self.mqtt_username = 'fishjoe2'
+        self.mqtt_psd = 'fishjoe2'
+        self.topic_pub = 'test'
+        self.topic_mess = 'PicoStart'
+        
         
     def log(self):
-        subDic={'topic':self.topic,'message':self.msg, 'from':self.from_server}
+        subDic={'topic':self.topic,'message':self.mess, 'from':self.from_server}
         timestr, *_ = dtstr()
         dicNew={timestr:subDic}
         dic={}
@@ -42,52 +50,50 @@ def dtstr():
     return dttm, dtstr, tmstr
 
 
-def make_page(server, homepage):
+def make_page(mcu, homepage):
     html = homepage
-    host = socket.getaddrinfo(server, 80)[0][-1]
-    s = socket.socket()
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind(host)
-    s.listen(1)
+    host = socket.getaddrinfo(mcu, 80)[0][-1]
+    skt = socket.socket()
+    print(skt)
+    skt.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    skt.bind(host)
+    skt.listen(1)
     x = 0
     response=""
     print('listening on', host)
     while True:
-        r, _, _ = select.select([s], [], [], 1.0)
+        r, _, _ = select.select([skt], [], [], 1.0)
         x+=1
         if x%3 == 0:
             led_blink(1,.1,.5)
         if r:
             count = 0
-            cl, addr = s.accept()
-            print('\nclient connected from', addr)
-            msg.from_server = addr[0]
+            cl, addr = skt.accept()
+            print('\nclient connected from', addr[0])
+            mefrom_server = addr[0]
             request = cl.recv(1024)
             request = request.decode("utf8")
-            print("line 66 request = cl.recv(1024)",request)
             requestTopic = request.lower()
-            requestMsg = request.lower()
+            requestmess = request.lower()
             isValid = all(["topic" in request, "message" in request])
-            msg.topic = requestTopic.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
-            msg.msg = requestMsg.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
-            print(msg.topic)
-            print(msg.msg)
-        #  .....................................
-            mqtt.subscribe(msg.topic)
-            print(f"(line79)subcribed to {msg.topic}")
-            mqtt.publish(msg.topic, msg.msg)
-            print(f"(line86)published message: {msg.msg}")
-            time.sleep(3)
+            me.topic = requestTopic.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
+            me.mess = requestmess.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
+            print(me.mess)
+            print(mqtt.sock_mqtt)
+            mqtt.set_callback(mqtt_callback)
+            print(mqtt.connect())
+            mqtt.subscribe("test")
+#             print(mqtt.sock_mqtt.read(1))
+            mqtt.publish("test", me.mess)
             mqtt.wait_msg()
-            print(f"(line83)Succesfully waited msg")
-        #   ...........................
-            if msg.isDone:
-                # response = f"<p> Sent: {msg.msg} at Topic : {msg.topic} </p>"
-                msg.isDone=False
-                response = msg.log()
-                msg.msg=""
-                msg.topic=""
-            # print(response)
+            print("published")
+            if me.isDone:
+                # response = f"<p> Sent: {memess} at Topic : {metopic} </p>"
+                me.isDone=False
+                response = me.log()
+                me.mess=""
+                me.topic=""
+                print(me.isDone)
             cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
             cl.send(response)
             response=""
@@ -96,7 +102,6 @@ def make_page(server, homepage):
             print("\r", x, sep="", end="")
             time.sleep(1)
             if x == 60:
-                mqtt.publish("refresh", "refresh")
                 print("\nmqtt refreshed")
                 led_blink(5,.1,.1)
                 x=0
@@ -125,32 +130,18 @@ def led_blink(qty, on, off):
 
 def mqtt_callback(topic, payload):
     led_blink(3,.2,.2)
-#     topic = topic.decode('utf-8')
-#     payload = payload.decode('utf-8')
-    msg.isDone = True
+    me.isDone = True
     print("\n'mqqt' received....")
 
-def mqtt_connect(**kwargs):
-        client = MQTTClient(**kwargs)
-        # Initializing MQTT callback attributes
-        client.set_callback(mqtt_callback)
-        client.connect()
-        print('Connected to ......... %s MQTT Broker' % kwargs["server"])
-        client.subscribe("test")
-        print('MQTT is ready. Subscribed to "test"', "\n")
-        return client
-
 if __name__ == "__main__":
-    mqtt_server = 'dc87a3d9523a42798c3d086fd8acbdb5.s1.eu.hivemq.cloud'
-    mqtt_port = 8883
-    client_id = 'PicoW'
-    mqtt_username = 'fishjoe'
-    mqtt_psd = 'fish8264'
-    topic_pub = 'test'
-    topic_msg = 'PicoStart'
-    msg=Message()
-    mqtt = mqtt_connect(client_id=client_id, server=mqtt_server, port=mqtt_port, user=mqtt_username,
-                         password=mqtt_psd, ssl=True, ssl_params={"server_hostname": mqtt_server}) 
+    me=Data()
+    mqtt = MQTTClient(client_id=me.client_id, server=me.mqtt_server, port=me.mqtt_port, user=me.mqtt_username, password=me.mqtt_psd, ssl=True, ssl_params={"server_hostname": me.mqtt_server})
+    mqtt.set_callback(mqtt_callback)
+    print(mqtt.connect())
+    print(mqtt.sock_mqtt)
+
+    time.sleep(1)
+    
     print("Connecting to http ......")
     wlan=network.WLAN()
     if not wlan.isconnected():
@@ -158,5 +149,5 @@ if __name__ == "__main__":
     else:
         page = make_page(wlan.ifconfig()[0], xml)
 
-
+    #    
     
