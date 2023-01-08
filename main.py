@@ -33,7 +33,7 @@ class Data:
         except:
             pass
         dic.update(dicNew)
-        print(dic)
+#         print(dic)
         if len(dic) >= 100:
             dic.popitem()
         with open("log.json", "w") as file:
@@ -70,27 +70,27 @@ def make_page(mcu, homepage):
             count = 0
             cl, addr = skt.accept()
             print('\nclient connected from', addr[0])
-            mefrom_server = addr[0]
-            request = cl.recv(1024)
-            request = request.decode("utf8")
-            requestTopic = request.lower()
-            requestmess = request.lower()
+            me.from_server = addr[0]
+            try:
+                request = cl.recv(1024)
+                request = request.decode("utf8")
+                request = request.lower()
+            except:
+                request = ""
             isValid = all(["topic" in request, "message" in request])
-            me.topic = requestTopic.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
-            me.mess = requestmess.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
+            me.topic = request.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
+            me.mess = request.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
             print(me.mess)
             print(mqtt.sock_mqtt)
             mqtt.set_callback(mqtt_callback)
             print(mqtt.connect())
             mqtt.subscribe("test")
-#             print(mqtt.sock_mqtt.read(1))
             mqtt.publish("test", me.mess)
             mqtt.wait_msg()
             print("published")
             if me.isDone:
-                # response = f"<p> Sent: {memess} at Topic : {metopic} </p>"
                 me.isDone=False
-                response = me.log()
+                response = str(me.log())
                 me.mess=""
                 me.topic=""
                 print(me.isDone)
@@ -102,6 +102,7 @@ def make_page(mcu, homepage):
             print("\r", x, sep="", end="")
             time.sleep(1)
             if x == 60:
+                mqtt.publish("refreshed", "refreshed")
                 print("\nmqtt refreshed")
                 led_blink(5,.1,.1)
                 x=0
@@ -137,17 +138,12 @@ if __name__ == "__main__":
     me=Data()
     mqtt = MQTTClient(client_id=me.client_id, server=me.mqtt_server, port=me.mqtt_port, user=me.mqtt_username, password=me.mqtt_psd, ssl=True, ssl_params={"server_hostname": me.mqtt_server})
     mqtt.set_callback(mqtt_callback)
-    print(mqtt.connect())
-    print(mqtt.sock_mqtt)
-
-    time.sleep(1)
-    
+#     print(mqtt.connect())
+#     print(mqtt.sock_mqtt)
     print("Connecting to http ......")
     wlan=network.WLAN()
     if not wlan.isconnected():
         print("Please connected to WIFI")
     else:
         page = make_page(wlan.ifconfig()[0], xml)
-
-    #    
     
