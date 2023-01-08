@@ -38,7 +38,6 @@ class Data:
             dic.popitem()
         with open("log.json", "w") as file:
             json.dump(dic, file)
-        return str(dic)
         
 
 def dtstr():  
@@ -71,16 +70,28 @@ def make_page(mcu, homepage):
             cl, addr = skt.accept()
             print('\nclient connected from', addr[0])
             me.from_server = addr[0]
+            
+            # use try except block to catch noise signal. ocasionally random ip would send noise signal
+            # and cannot be parsed. This block filters it out.
+            
             try:
                 request = cl.recv(1024)
                 request = request.decode("utf8")
                 request = request.lower()
             except:
                 request = ""
+                
+            # only both "topic" and "message" presenting would trigger the process go ahead.
             isValid = all(["topic" in request, "message" in request])
             me.topic = request.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
             me.mess = request.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
             print(me.mess)
+            
+            # TODO current design of the program is still experimental. Random error would occur.
+            
+            # This may becaused by the conflict of sockets process between to functionality. Http
+            # requests gathering and 
+            
             print(mqtt.sock_mqtt)
             mqtt.set_callback(mqtt_callback)
             print(mqtt.connect())
@@ -90,10 +101,9 @@ def make_page(mcu, homepage):
             print("published")
             if me.isDone:
                 me.isDone=False
-                response = str(me.log())
+                response = "Suceed"
                 me.mess=""
-                me.topic=""
-                print(me.isDone)
+                me.topic=""   
             cl.send('HTTP/1.0 200 OK\r\nContent-type: text/html\r\n\r\n')
             cl.send(response)
             response=""
