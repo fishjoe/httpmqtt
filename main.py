@@ -91,7 +91,7 @@ def make_page(mcu, homepage):
             # TODO current design of the program is still experimental. Random error would occur.
             
             # This may becaused by the conflict of sockets process between to functionality. Http
-            # requests gathering and 
+            # requests gathering and MQTT sending / receiving confirmation. May update to fix the bugs.
             
             print(mqtt.sock_mqtt)
             mqtt.set_callback(mqtt_callback)
@@ -149,7 +149,7 @@ if __name__ == "__main__":
     me=Data()
     mqtt = MQTTClient(client_id=me.client_id, server=me.mqtt_server, port=me.mqtt_port, user=me.mqtt_username, password=me.mqtt_psd, ssl=True, ssl_params={"server_hostname": me.mqtt_server})
     mqtt.set_callback(mqtt_callback)
-#     print(mqtt.connect())
+    print(mqtt.connect())
 #     print(mqtt.sock_mqtt)
     print("Connecting to http ......")
     wlan=network.WLAN()
