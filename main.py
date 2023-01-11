@@ -86,6 +86,7 @@ def make_page(mcu, homepage):
             me.topic = request.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
             me.mess = request.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
             print(me.mess)
+            print(me.topic)
             
             # TODO current design of the program is still experimental. Random error would occur.
             
@@ -96,7 +97,7 @@ def make_page(mcu, homepage):
             mqtt.set_callback(mqtt_callback)
             print(mqtt.connect())
             mqtt.subscribe("test")
-            mqtt.publish("test", me.mess)
+            mqtt.publish(me.topic, me.mess)
             mqtt.wait_msg()
             print("published")
             if me.isDone:
