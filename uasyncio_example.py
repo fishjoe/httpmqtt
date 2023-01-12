@@ -8,7 +8,7 @@ def queue(d):
         #This will not run until a sleep period occurs
         print(l.lst)
         l.lst=[]
-
+		
 	l.lst.append(d)
 	if len(l.lst) > 1:
 		return
