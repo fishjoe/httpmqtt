@@ -83,21 +83,22 @@ def make_page(mcu, homepage):
                 
             # only both "topic" and "message" presenting would trigger the process go ahead.
             isValid = all(["topic" in request, "message" in request])
-            me.topic = request.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerTopic"
-            me.mess = request.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrerMessage"
+            me.topic = request.split("topic")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrorTopic"
+            me.mess = request.split("message")[1].replace(":"," ").strip().split("\n")[0].split(" ")[0] if isValid else "ErrorMessage"
             print(me.mess)
             print(me.topic)
+            skt.close()
             
             # TODO current design of the program is still experimental. Random error would occur.
             
             # This may becaused by the conflict of sockets process between to functionality. Http
             # requests gathering and MQTT sending / receiving confirmation. May update to fix the bugs.
             
-            print(mqtt.sock_mqtt)
-            mqtt.set_callback(mqtt_callback)
-            print(mqtt.connect())
-            mqtt.subscribe("test")
-            mqtt.publish(me.topic, me.mess)
+#             print(mqtt.sock_mqtt)
+#             mqtt.set_callback(mqtt_callback)
+#             print(mqtt.connect())
+#             mqtt.subscribe("test")
+            mqtt.publish("test", me.mess)
             mqtt.wait_msg()
             print("published")
             if me.isDone:
@@ -112,8 +113,8 @@ def make_page(mcu, homepage):
         else:
             print("\r", x, sep="", end="")
             time.sleep(1)
-            if x == 60:
-                mqtt.publish("refreshed", "refreshed")
+            if x == 60:  # refreshes every 60 seconds 
+                mqtt.ping()
                 print("\nmqtt refreshed")
                 led_blink(5,.1,.1)
                 x=0
