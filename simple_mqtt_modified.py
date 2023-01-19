@@ -155,7 +155,7 @@ class MQTTClient:
             op = self.wait_msg()
             if op == 0x90:
                 resp = self.sock_mqtt.read(4)
-                #print(resp)
+                print("in subscribe , ", resp)
                 assert resp[1] == pkt[2] and resp[2] == pkt[3]
                 if resp[3] == 0x80:
                     raise MQTTException(resp[3])
@@ -167,6 +167,7 @@ class MQTTClient:
     # messages processed internally.
     def wait_msg(self):
         res = self.sock_mqtt.read(1)
+        print(res)
         self.sock_mqtt.setblocking(True)
         if res is None:
             return None

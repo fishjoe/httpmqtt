@@ -24,7 +24,7 @@ def led_blink(qty, on, off):
             time.sleep(on)
             
 
-def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', '255.255.255.0', '192.168.1.254', '8.8.8.8')): # Keys may include ssid, password, isAP, isStatic, staticIPPresetTuple)
+def wifi_connection(ssid, psd, isAp=False, isStatic=False, iptp=('192.168.1.98', '255.255.255.0', '192.168.1.254', '8.8.8.8')): # Keys may include ssid, password, isAP, isStatic, staticIPPresetTuple)
     count_on_attempts=0
     if isAp:
         ssid = 'PicoWSetup'
@@ -45,6 +45,7 @@ def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', 
         led_blink(2, .2, .2)
         while True:
             if isStatic:
+            # defalut wifi connecting is in DCHP
                 wifi.ifconfig(iptp)
 # #                 led_blink(4, .2, .2)
 #             else:
@@ -58,7 +59,11 @@ def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', 
 #             print(count_on_attempts, "attempts")
 #             print("network.status()code : ", wifi.status())
 #             print("network.isconnected() : ", wifi.isconnected())
-            print(".", end="", sep="")
+            print([
+                        wifi.isconnected(),
+                        wifi.status(),
+                        wifi.ifconfig()[0]
+                    ])
             time.sleep(0.5)
             led_blink(count_on_attempts, 0.2, 0.2)
             ip = iptp[0] if not isStatic else wifi.ifconfig()[0]
