@@ -5,6 +5,7 @@ import time
 import ubinascii
 
 
+
 # Method for blinking.
 led = machine.Pin('LED', machine.Pin.OUT)
 if led.value():
@@ -24,7 +25,7 @@ def led_blink(qty, on, off):
             time.sleep(on)
             
 
-def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=('192.168.1.99', '255.255.255.0', '192.168.1.254', '8.8.8.8')): # Keys may include ssid, password, isAP, isStatic, staticIPPresetTuple)
+def wifi_connection(ssid, psd, isAp=False, isStatic=True, iptp=(static_ip, '255.255.255.0', '192.168.1.254', '8.8.8.8')): # Keys may include ssid, password, isAP, isStatic, staticIPPresetTuple)
     count_on_attempts=0
     if isAp:
         ssid = 'PicoWSetup'
@@ -234,7 +235,12 @@ def wifi():
     wlan = wifi_connection(ssid, psd)
     mac = ubinascii.hexlify(network.WLAN().config('mac'),':').decode()
     print(mac)
+    
+
+def update():
+    pass
 
 
 if __name__ == "__main__":
+    static_ip = '192.168.1.98'
     wifi()
