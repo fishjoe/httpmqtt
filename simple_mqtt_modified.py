@@ -5,6 +5,8 @@ from ubinascii import hexlify
 class MQTTException(Exception):
     pass
 
+
+
 class MQTTClient:
 
     def __init__(self, client_id, server, port=0, user=None, password=None, keepalive=0,

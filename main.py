@@ -66,12 +66,14 @@ def mqtt_send(mqtt, tpc, msg, r=0):
 #             print(f"\t\t{dtstr()[2]}\tconnected to {me.mqtt_server}...")
 #         except OSError:
 #             time.sleep(1)
-    try:
-        mqtt.publish(tpc, msg)
-        print(f"\t\t{dtstr()[2]}\tconnected to {me.mqtt_server}...")
-    except OSError:
-        mqtt.connect()
-        pass
+    while True:
+        try:
+            mqtt.publish(tpc, msg)
+            print(f"\t\t{dtstr()[2]}\tconnected to {me.mqtt_server}...")
+            break
+        except OSError:
+            mqtt.connect()
+            time.sleep(2)
     
     
    # TODO need to fix

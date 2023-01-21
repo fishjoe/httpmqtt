@@ -57,7 +57,6 @@ topic_msg = 'PicoStart'
 mqtt=MQTTClient(client_id=client_id, server=mqtt_server, port=mqtt_port, user=mqtt_username,password=mqtt_psd, ssl=True, ssl_params={"server_hostname": mqtt_server})
 mqtt.set_callback(mqtt_callback)
 print(mqtt.connect())
-print(mqtt.ping())
 mqtt.subscribe("test")
 att=1
 timer_start = time.mktime(time.localtime())
