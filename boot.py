@@ -238,10 +238,19 @@ def wifi():
     print(mac)
     
 
+
+# check if is update needed function.
+def isUpdateNeeded(target_url, file): 
+    # check online 
+    return True
+
 def update():
     pass
 
+# call isUpdateNeeded() to check online server if there is the file and if need update
+
+if isUpdateNeeded:
+    update()
 
 if __name__ == "__main__":
-    static_ip = '192.168.1.99'
     wifi()
